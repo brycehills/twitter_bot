@@ -1,4 +1,4 @@
-import tweepy,json
+import tweepy
 from tweepy import OAuthHandler
 import config as config
 from config import Common as c
@@ -8,8 +8,6 @@ from time import sleep
 
 name = "roman37416126"
 Hours = 5 
-
-qlist = ['Stafford','Rams','Lions','coffee','korea','kpop','mask','wallstreetbets','covid','trump','twitter','github','follow','GME','bitcoin','google','facebook','california','Robinhood','AOC','TRX','Apple','AMC','Tesla','GE','Microsoft','Oracle','Nokia','Amazon','Democrat','Republican','American','Bank','Intel','AMD','Melvin','Uber','a', 'AAA', 'AAAS', 'aardvark', 'Aarhus', 'Aaron', 'ABA', 'Ababa','aback', 'abacus', 'abalone', 'abandon', 'abase', 'abash', 'abate','abbas', 'abbe', 'abbey', 'abbot', 'Abbott', 'abbreviate',"python", "jumble", "easy", "difficult", "answer", "xylophone"]
 
 def main():
 	consumer_key=c.consumer_key
@@ -21,7 +19,8 @@ def main():
 	api = tweepy.API(auth, wait_on_rate_limit=True,
     wait_on_rate_limit_notify=True)
 	return api
-	
+
+#used to delete tweets from user acct	
 def del_tweets(api, username):
     page = 1
     deadend = False
@@ -37,32 +36,56 @@ def del_tweets(api, username):
             return
     if not deadend:
         page+=1
-        time.sleep(20)
-		
+        time.sleep(10)
+
+# search for tweets with specific keywords - static 
 def searchNode(api,qitem):
 	followcount = 0
-	for tweet in api.search(q = qitem, count = 10):
+	for tweet in api.search(q = qitem, count = 100):
 		#print(f"{tweet.user.name}:{tweet.text}")
 		time.sleep(5)
-		if not tweet.retweeted:
+		if not tweet.retweeted: #check if already retweeted
 			try:
 				tweet.retweet()
 				tweet.favorite()
 			except Exception as e:
 				print("error on retweet\n")
-		if followcount < 100:
+		if followcount < 200:	# cap follow at 200/day to avoid ban
 			try: 
 				#tweet.user.follow()
 				followcount+=1
 			except Exception as e:
 				print("error on follow\n")
-			
-def printFavorites(api):
-	user_tweets = api.user_timeline('roman37416126', count=count)
-	print(user_tweets)
+
+#steam listener class 				
+class MyStreamListener(tweepy.StreamListener):
+	#init
+	def on_status(self, data):
+		self.process(data)
+		return True
+		
+	#listener functionality
+	def process(self, data):
+		print(data.text)
+		if data.user.follow():
+			print('yes')
+		sleep(2)
+		
+	def on_error(self, data):
+		if status_code == 420:
+			return False
+		print(data.text)
+
+def CreateStream(api, listener):
+	myStreamListener = MyStreamListener()
+	s = tweepy.Stream(auth = api.auth, listener=myStreamListener)
+	s.filter(track=['Follow']) #set track
+	sleep(1)
 	
 if __name__ == "__main__":
-	api = main()
-	#del_tweets(api, name)
+	api = main() #get auth
+	#listener = MyStreamListener() #create listener
+	#CreateStream(api, listener)
+	qlist = ['Crypto','Politics','Sports','Food','Trump','Biden']  #custom tag list
 	for i in qlist:
 		searchNode(api,i)
