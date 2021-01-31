@@ -5,6 +5,7 @@ from config import Common as c
 import time
 from datetime import datetime, timedelta
 from time import sleep
+import random
 
 name = "roman37416126"
 Hours = 5 
@@ -40,22 +41,28 @@ def del_tweets(api, username):
 
 # search for tweets with specific keywords - static 
 def searchNode(api,qitem):
-	followcount = 0
-	for tweet in api.search(q = qitem, count = 100):
-		#print(f"{tweet.user.name}:{tweet.text}")
-		time.sleep(5)
-		if not tweet.retweeted: #check if already retweeted
-			try:
-				tweet.retweet()
-				tweet.favorite()
-			except Exception as e:
-				print("error on retweet\n")
-		if followcount < 200:	# cap follow at 200/day to avoid ban
-			try: 
-				#tweet.user.follow()
-				followcount+=1
-			except Exception as e:
-				print("error on follow\n")
+	#add random word selector from dict file
+	filename = "words.txt"
+	candidates = [x.strip().lower() for x in open(filename,"r")]
+	followcount = 0 #initfollowcounnt
+	while(filename):
+		word = candidates[(random.randint(0,len(candidates) - 1))]
+		print('word: ' + word)
+		for tweet in api.search(q = word, count = 1):
+			#print(f"{tweet.user.name}:{tweet.text}")
+			time.sleep(4)
+			if not tweet.retweeted: #check if already retweeted
+				try:
+					tweet.retweet()
+					tweet.favorite()
+				except Exception as e:
+					print("error on retweet\n")
+			if followcount < 200:	# cap follow at 200/day to avoid ban
+				try: 
+					#tweet.user.follow()
+					followcount+=1
+				except Exception as e:
+					print("error on follow\n")
 
 #steam listener class 				
 class MyStreamListener(tweepy.StreamListener):
