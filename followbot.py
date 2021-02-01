@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from time import sleep
 import random
 
-name = "roman37416126"
+name = "username123"
 Hours = 5 
 
 def main():
@@ -42,7 +42,7 @@ def del_tweets(api, username):
 # search for tweets with specific keywords - static 
 def searchNode(api,qitem):
 	#add random word selector from dict file
-	filename = "words.txt"
+	filename = "googletxt.txt"
 	candidates = [x.strip().lower() for x in open(filename,"r")]
 	followcount = 0 #initfollowcounnt
 	while(filename):
@@ -74,8 +74,8 @@ class MyStreamListener(tweepy.StreamListener):
 	#listener functionality
 	def process(self, data):
 		print(data.text)
-		if data.user.follow():
-			print('yes')
+		#if data.user.follow():
+			#print("followed")
 		sleep(2)
 		
 	def on_error(self, data):
