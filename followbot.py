@@ -40,7 +40,7 @@ def del_tweets(api, username):
         time.sleep(10)
 
 # search for tweets with specific keywords - static 
-def searchNode(api,qitem):
+def searchNode(api):
 	#add random word selector from dict file
 	filename = "googletxt.txt"
 	candidates = [x.strip().lower() for x in open(filename,"r")]
@@ -49,20 +49,24 @@ def searchNode(api,qitem):
 		word = candidates[(random.randint(0,len(candidates) - 1))]
 		print('word: ' + word)
 		for tweet in api.search(q = word, count = 1):
-			#print(f"{tweet.user.name}:{tweet.text}")
+			print(f"{tweet.user.name}:{tweet.text}")
 			time.sleep(4)
-			if not tweet.retweeted: #check if already retweeted
-				try:
-					tweet.retweet()
-					tweet.favorite()
-				except Exception as e:
-					print("error on retweet\n")
-			if followcount < 200:	# cap follow at 200/day to avoid ban
-				try: 
-					#tweet.user.follow()
-					followcount+=1
-				except Exception as e:
-					print("error on follow\n")
+			if tweet.favorite_count > 20: #make sure has < 20 faves
+				if not tweet.retweeted: #check if already retweeted
+					try:
+						tweet.retweet()
+						tweet.favorite()
+					except Exception as e:
+						print("error on retweet/fav\n")
+			if followcount < 750:	# cap follow at 750/day to avoid ban
+				if tweet.user.followers_count > 100: #worthwhile follow - i think
+					try: 
+						if tweet.user.follow():
+							followcount+=1
+					except Exception as e:
+						print("error on follow\n")
+			else:
+				print("Daily follow limit reached!")
 
 #steam listener class 				
 class MyStreamListener(tweepy.StreamListener):
@@ -94,5 +98,5 @@ if __name__ == "__main__":
 	#listener = MyStreamListener() #create listener
 	#CreateStream(api, listener)
 	qlist = ['Crypto','Politics','Sports','Food','Trump','Biden']  #custom tag list
-	for i in qlist:
-		searchNode(api,i)
+	#for i in qlist:
+	searchNode(api)
